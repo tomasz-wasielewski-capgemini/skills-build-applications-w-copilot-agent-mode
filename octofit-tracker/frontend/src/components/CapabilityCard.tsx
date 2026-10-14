@@ -1,14 +1,3 @@
-import { useEffect, useState } from 'react';
-import { getJson } from '../api/client.js';
-
-type Props = {
-  title: string;
-  description: string;
-  apiPath: string;
-  itemsKey: string;
-  emptyMessage: string;
-};
-
 function formatItem(item: unknown): string {
   if (item === null || item === undefined) return '';
   if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean') {
@@ -26,37 +15,23 @@ function formatItem(item: unknown): string {
   return String(item);
 }
 
-export function CapabilityCard({ title, description, apiPath, itemsKey, emptyMessage }: Props) {
-  const [items, setItems] = useState<unknown[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+type Props = {
+  title: string;
+  description: string;
+  items?: unknown[];
+  isLoading?: boolean;
+  error?: string | null;
+  emptyMessage?: string;
+};
 
-  useEffect(() => {
-    let active = true;
-
-    async function loadItems() {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await getJson<Record<string, unknown>>(apiPath);
-        if (!active) return;
-
-        const nextItems = Array.isArray(response[itemsKey]) ? response[itemsKey] : [];
-        setItems(nextItems as unknown[]);
-      } catch (caughtError) {
-        if (!active) return;
-        const message = caughtError instanceof Error ? caughtError.message : 'Unable to load data';
-        setError(message);
-      } finally {
-        if (active) setIsLoading(false);
-      }
-    }
-
-    void loadItems();
-    return () => { active = false; };
-  }, [apiPath, itemsKey]);
-
+export function CapabilityCard({
+  title,
+  description,
+  items = [],
+  isLoading = false,
+  error = null,
+  emptyMessage = 'No items available.',
+}: Props) {
   return (
     <section className="card h-100">
       <div className="card-body">
